@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="Control de inscripciones y turnos del karaoke">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>Karaoke · Control de inscripciones</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1020;--panel:#131b2e;--panel2:#19243a;--line:#2a3650;--text:#f4f7ff;--muted:#a6b2ca;--accent:#a78bfa;--green:#4ade80;--yellow:#fbbf24;--red:#fb7185}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(1000px 500px at 10% -10%,#29204c 0,transparent 55%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    button,input,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:10px 13px;font-weight:650}button:hover{filter:brightness(1.12)}button.primary{background:var(--accent);color:#170e2f;border-color:transparent}button.good{border-color:#246f4b;color:var(--green)}button.warn{border-color:#735a1e;color:var(--yellow)}
+    .wrap{max-width:1250px;margin:auto;padding:24px 18px 50px}.top{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.brand{display:flex;gap:13px;align-items:center}.logo{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#c4b5fd,#7c3aed);display:grid;place-items:center;font-size:27px;box-shadow:0 8px 30px #7c3aed30}.eyebrow{color:var(--accent);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.13em}.title{font-size:clamp(25px,4vw,36px);font-weight:850;letter-spacing:-.04em;margin:2px 0}.subtitle{color:var(--muted);margin:0}.actions{display:flex;gap:8px;flex-wrap:wrap}
+    .statusbar{display:flex;align-items:center;gap:9px;color:var(--muted);margin:22px 0 16px;flex-wrap:wrap}.dot{width:9px;height:9px;border-radius:50%;background:var(--yellow);display:inline-block}.dot.live{background:var(--green);box-shadow:0 0 12px #4ade8070}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}.stat{background:linear-gradient(145deg,var(--panel),#11182a);border:1px solid var(--line);border-radius:16px;padding:16px}.stat .label{color:var(--muted);font-size:13px}.stat .num{font-size:30px;font-weight:850;letter-spacing:-.04em;margin-top:4px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}.panel{background:#111a2beF;border:1px solid var(--line);border-radius:18px;overflow:hidden}.panelhead{padding:17px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.panelhead h2{font-size:17px;margin:0}.small{font-size:12px;color:var(--muted)}.tools{display:flex;gap:8px;flex-wrap:wrap}.tools input,.tools select,.field input,.field select{background:#0b1222;border:1px solid var(--line);border-radius:10px;padding:10px 11px;color:var(--text);min-width:0}.tools input{width:min(260px,60vw)}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:#0e1627;padding:12px 14px;white-space:nowrap}td{padding:13px 14px;border-top:1px solid #263149;vertical-align:middle}tbody tr:hover{background:#ffffff06}.turn{display:inline-grid;place-items:center;min-width:37px;height:37px;padding:0 7px;border-radius:12px;background:#2b2350;color:#d8caff;font-weight:900}.name{font-weight:750}.song{color:#d5ddef}.muted{color:var(--muted)}.badge{display:inline-flex;align-items:center;gap:6px;border-radius:100px;padding:5px 9px;font-size:12px;font-weight:750;white-space:nowrap}.waiting{background:#382d17;color:#fcd777}.singing{background:#163c31;color:#7af0b2}.done{background:#263247;color:#c3cee2}.rowactions{display:flex;gap:5px}.rowactions button{font-size:12px;padding:7px 9px}.empty{padding:45px 20px;text-align:center;color:var(--muted)}.empty strong{display:block;color:var(--text);font-size:17px;margin-bottom:5px}.side{padding:17px}.side h3{margin:0 0 10px;font-size:16px}.side p{color:var(--muted);font-size:13px;margin:0 0 14px}.sidebox{border:1px solid var(--line);border-radius:13px;padding:13px;margin-top:12px}.sidebox strong{display:block;margin-bottom:4px}.notice{background:#201a38;border:1px solid #4b3c78;border-radius:13px;padding:12px;color:#ded5ff;font-size:13px;margin-top:13px}.footer{color:#73819c;font-size:12px;margin-top:18px;text-align:center}.modalback{position:fixed;inset:0;background:#02040bd9;display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modalback.open{display:flex}.modal{width:min(560px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:21px;box-shadow:0 20px 90px #0009}.modal h2{margin:0 0 7px}.modal>p{color:var(--muted);font-size:13px;margin-top:0}.field{display:grid;gap:6px;margin:14px 0}.field label{font-size:13px;color:#d5def1;font-weight:700}.field input,.field select{width:100%}.modalfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;flex-wrap:wrap}.help{font-size:12px;color:var(--muted)}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);opacity:0;background:#f4f0ff;color:#211438;border-radius:13px;padding:13px 17px;box-shadow:0 10px 40px #0007;z-index:50;transition:.25s;max-width:90vw;font-weight:700}.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+    @media(max-width:850px){.layout{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:13px}.stat .num{font-size:25px}.side{order:2}}@media(max-width:520px){.wrap{padding:16px 11px 35px}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:span 2}.actions button{flex:1}.title{font-size:25px}.panelhead{align-items:flex-start}.tools{width:100%}.tools input{flex:1;width:100%}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div class="brand"><div class="logo">🎤</div><div><div class="eyebrow">Panel de organización</div><h1 class="title">Control del Karaoke</h1><p class="subtitle">Inscripciones ordenadas por llegada, sin perder ningún turno.</p></div></div>
+      <div class="actions"><button id="soundBtn" title="Activar sonido">🔔 Activar avisos</button><button id="refreshBtn">↻ Actualizar</button><button class="primary" id="settingsBtn">⚙ Configurar</button></div>
+    </header>
+    <div class="statusbar"><span class="dot" id="connectionDot"></span><span id="connectionText">Falta conectar Google Sheets</span><span>·</span><span id="lastUpdated">Sin sincronizar</span></div>
+    <section class="stats">
+      <div class="stat"><div class="label">Inscripciones recibidas</div><div class="num" id="totalCount">0</div></div>
+      <div class="stat"><div class="label">Pendientes de cantar</div><div class="num" id="waitingCount">0</div></div>
+      <div class="stat"><div class="label">Ya han cantado</div><div class="num" id="doneCount">0</div></div>
+    </section>
+    <section class="layout">
+      <div class="panel">
+        <div class="panelhead"><div><h2>📋 Orden de llegada</h2><div class="small">El turno se calcula por fecha y hora de envío del formulario.</div></div><div class="tools"><input id="search" placeholder="Buscar nombre o canción…" aria-label="Buscar"><select id="filter"><option value="all">Todos los estados</option><option value="Pendiente">Pendientes</option><option value="Cantando">Cantando</option><option value="Finalizado">Finalizados</option></select></div></div>
+        <div class="tablewrap"><table><thead><tr><th>Turno</th><th>Participante</th><th>Canción</th><th>Hora de llegada</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="rows"></tbody></table><div class="empty" id="empty"><strong>Aún no hay inscripciones</strong>Conecta la hoja de respuestas en Configurar para empezar.</div></div>
+      </div>
+      <aside class="panel side"><h3>🎛️ Tu control rápido</h3><p>Usa los botones de cada participante para llevar el ritmo de la lista durante el karaoke.</p>
+        <div class="sidebox"><strong>🟡 Pendiente</strong><span class="small">La persona está esperando su turno.</span></div>
+        <div class="sidebox"><strong>🟢 Cantando</strong><span class="small">Está en el escenario ahora mismo.</span></div>
+        <div class="sidebox"><strong>⚪ Finalizado</strong><span class="small">Ya ha terminado de cantar.</span></div>
+        <div class="notice">💡 <b>Consejo:</b> mantén esta app abierta. La primera vez, pulsa «Activar avisos» y acepta los permisos del navegador.</div>
+        <div class="sidebox"><strong>🔒 Privacidad</strong><span class="small">La app lee los datos de la hoja que configures. No introduzcas información que no necesites para organizar el karaoke.</span></div>
+      </aside>
+    </section>
+    <div class="footer">Karaoke Control · Los estados se guardan en este navegador; las inscripciones originales permanecen en Google Sheets.</div>
+  </main>
+  <div class="modalback" id="modalBack" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal">
+    <h2 id="modalTitle">Conectar Google Sheets</h2><p>Publica el script de Google Apps Script incluido en el ZIP y pega aquí la URL de la aplicación web que termina en <code>/exec</code>.</p>
+    <div class="field"><label for="endpoint">URL de Google Apps Script</label><input id="endpoint" type="url" placeholder="https://script.google.com/macros/s/…/exec"></div>
+    <div class="field"><label for="poll">Frecuencia de comprobación</label><select id="poll"><option value="10">Cada 10 segundos</option><option value="20">Cada 20 segundos</option><option value="30">Cada 30 segundos</option><option value="60">Cada minuto</option></select></div>
+    <div class="help">Para que la conexión funcione, el script debe estar implementado como aplicación web y tener acceso autorizado a la hoja. La primera comprobación carga la lista sin avisar de inscripciones antiguas.</div>
+    <div class="modalfoot"><button id="closeSettings">Cancelar</button><button class="primary" id="saveSettings">Guardar y conectar</button></div>
+  </div></div>
+  <div class="toast" id="toast"></div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const KEYS = {url:'karaoke_sheet_endpoint', poll:'karaoke_poll_seconds', states:'karaoke_states'};
+  let entries = [], timer = null, initialized = false, known = new Set(), audioCtx = null, notificationEnabled = false, busy = false;
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const savedStates = () => { try { return JSON.parse(localStorage.getItem(KEYS.states)||'{}'); } catch { return {}; } };
+  const stateMap = savedStates();
+  const rowId = r => String(r._id || [r._timestamp,r._name,r._song].join('|'));
+  const showToast = msg => { $('toast').textContent=msg; $('toast').classList.add('show'); setTimeout(()=>$('toast').classList.remove('show'),3200); };
+  function playTone(){ try { const C=window.AudioContext||window.webkitAudioContext; if(!C)return; audioCtx=audioCtx||new C(); if(audioCtx.state==='suspended')audioCtx.resume(); const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.connect(g);g.connect(audioCtx.destination);o.type='sine';o.frequency.setValueAtTime(880,audioCtx.currentTime);o.frequency.setValueAtTime(1175,audioCtx.currentTime+.12);g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.18,audioCtx.currentTime+.025);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.35);o.start();o.stop(audioCtx.currentTime+.36);}catch{} }
+  async function enableNotifications(){
+    notificationEnabled=true;
+    if('Notification' in window && Notification.permission==='default'){try{await Notification.requestPermission()}catch{}}
+    if(audioCtx && audioCtx.state==='suspended') await audioCtx.resume();
+    $('soundBtn').textContent='🔔 Avisos activados'; showToast('Avisos activados en esta sesión.');
+  }
+  function notifyNew(r){
+    playTone();
+    if('Notification' in window && Notification.permission==='granted'){
+      try { new Notification('Nueva inscripción al karaoke',{body:`Turno ${r._turn}: ${r._name||'Participante'}${r._song?' · '+r._song:''}`,icon:'icon.svg',tag:rowId(r)}); } catch {}
+    }
+    showToast(`🎤 Nueva inscripción · Turno ${r._turn}: ${r._name||'Participante'}`);
+  }
+  function callJsonp(url){
+    return new Promise((resolve,reject)=>{
+      const cb='karaokeCb_'+Date.now()+'_'+Math.floor(Math.random()*100000);
+      const script=document.createElement('script'); let done=false;
+      const finish=(fn,v)=>{if(done)return;done=true;clearTimeout(timeout);delete window[cb];script.remove();fn(v)};
+      const timeout=setTimeout(()=>finish(reject,new Error('Tiempo de espera agotado. Comprueba la URL y los permisos del script.')),15000);
+      window[cb]=data=>finish(resolve,data);
+      script.onerror=()=>finish(reject,new Error('No se pudo acceder al script. Comprueba que esté implementado como aplicación web.'));
+      script.src=url+(url.includes('?')?'&':'?')+'callback='+cb+'&_='+Date.now();
+      document.head.appendChild(script);
+    });
+  }
+  function normalizePayload(data){
+    if(!data || data.ok===false) throw new Error(data?.error || 'El script no ha devuelto datos válidos.');
+    if(Array.isArray(data.rows)) return data.rows;
+    throw new Error('La respuesta no contiene una lista de filas.');
+  }
+  async function sync(isManual=false){
+    const url=localStorage.getItem(KEYS.url);
+    if(!url){setConnection(false,'Falta conectar Google Sheets');if(isManual)openSettings();return}
+    if(busy)return;busy=true;
+    try{
+      const payload=await callJsonp(url); const raw=normalizePayload(payload);
+      const normalized=raw.map((r,i)=>({
+        ...r,
+        _id:String(r._id || [r._timestamp||r.timestamp||r['Marca temporal']||r['Timestamp']||i,r._name||r.name||r['Nombre']||r['Nombre y apellidos']||'',r._song||r.song||r['Canción']||r['Cancion']||''].join('|')),
+        _timestamp:r._timestamp||r.timestamp||r['Marca temporal']||r['Timestamp']||'',
+        _name:r._name||r.name||r['Nombre de quien canta']||r['Nombre']||r['Nombre y apellidos']||r['Participante']||r['Name']||'Participante',
+        _song:r._song||r.song||r['Canción']||r['Cancion']||r['Canción que vas a cantar']||r['Song']||'—',
+        _artist:r._artist||r.artist||r['Cantante / autor']||r['Cantante/autor']||r['Cantante o autor']||r['Artista']||'',
+        _language:r._language||r.language||r['Idioma']||''
+      }));
+      normalized.sort((a,b)=>dateValue(a._timestamp)-dateValue(b._timestamp));
+      normalized.forEach((r,i)=>r._turn=i+1);
+      const newRows=initialized?normalized.filter(r=>!known.has(rowId(r))):[];
+      entries=normalized;known=new Set(normalized.map(rowId));initialized=true;
+      render();setConnection(true,'Conectado a Google Sheets');$('lastUpdated').textContent='Actualizado '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      if(newRows.length && notificationEnabled)newRows.forEach(notifyNew);
+      else if(newRows.length) showToast(`${newRows.length} nueva(s) inscripción(es) recibida(s). Activa los avisos para sonido.`);
+      if(isManual)showToast('Lista actualizada correctamente.');
+    }catch(e){setConnection(false,'Error de conexión');$('lastUpdated').textContent=e.message; if(isManual)showToast(e.message)}
+    finally{busy=false}
+  }
+  function dateValue(v){if(typeof v==='number')return v;const d=new Date(v);return isNaN(d.getTime())?0:d.getTime()}
+  function timeText(v){if(!v)return '—';const d=new Date(v);return isNaN(d.getTime())?String(v):d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+  function setConnection(ok,msg){$('connectionDot').classList.toggle('live',ok);$('connectionText').textContent=msg}
+  function render(){
+    const q=$('search').value.trim().toLocaleLowerCase('es'), filter=$('filter').value;
+    const visible=entries.filter(r=>(!q||`${r._name} ${r._song}`.toLocaleLowerCase('es').includes(q))&&(!filter||(filter==='all'||(stateMap[rowId(r)]||'Pendiente')===filter)));
+    $('totalCount').textContent=entries.length;
+    $('waitingCount').textContent=entries.filter(r=>(stateMap[rowId(r)]||'Pendiente')!=='Finalizado').length;
+    $('doneCount').textContent=entries.filter(r=>stateMap[rowId(r)]==='Finalizado').length;
+    $('rows').innerHTML=visible.map(r=>{
+      const state=stateMap[rowId(r)]||'Pendiente', cls=state==='Cantando'?'singing':state==='Finalizado'?'done':'waiting';
+      const next=state==='Pendiente'?'Cantando':state==='Cantando'?'Finalizado':'Pendiente';
+      const label=next==='Cantando'?'▶ Cantar':next==='Finalizado'?'✓ Terminar':'↺ Reabrir';
+      return `<tr><td><span class="turn">${r._turn}</span></td><td><div class="name">${esc(r._name)}</div></td><td><div class="song">${esc(r._song)}</div><div class="small">${esc([r._artist,r._language].filter(Boolean).join(" · "))}</div></td><td><span class="muted">${esc(timeText(r._timestamp))}</span></td><td><span class="badge ${cls}">${state==='Pendiente'?'●':state==='Cantando'?'●':'✓'} ${state}</span></td><td><div class="rowactions"><button class="${next==='Cantando'?'good':next==='Finalizado'?'':'warn'}" data-id="${esc(rowId(r))}" data-state="${next}">${label}</button></div></td></tr>`;
+    }).join('');
+    $('empty').style.display=visible.length?'none':'block';
+  }
+  function openSettings(){$('endpoint').value=localStorage.getItem(KEYS.url)||'';$('poll').value=localStorage.getItem(KEYS.poll)||'20';$('modalBack').classList.add('open')}
+  function restartPolling(){if(timer)clearInterval(timer);timer=setInterval(()=>sync(false),Math.max(10,Number(localStorage.getItem(KEYS.poll)||20))*1000)}
+  $('rows').addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(!b)return;stateMap[b.dataset.id]=b.dataset.state;localStorage.setItem(KEYS.states,JSON.stringify(stateMap));render()});
+  $('settingsBtn').onclick=openSettings;$('closeSettings').onclick=()=>$('modalBack').classList.remove('open');
+  $('modalBack').addEventListener('click',e=>{if(e.target===$('modalBack'))$('modalBack').classList.remove('open')});
+  $('saveSettings').onclick=()=>{const url=$('endpoint').value.trim();if(!url){showToast('Pega la URL de la aplicación web de Apps Script.');return}if(!/^https:\/\/script\.google\.com\/macros\/s\//.test(url)){showToast('La URL debe empezar por https://script.google.com/macros/s/');return}localStorage.setItem(KEYS.url,url);localStorage.setItem(KEYS.poll,$('poll').value);$('modalBack').classList.remove('open');initialized=false;known.clear();sync(true);restartPolling()};
+  $('refreshBtn').onclick=()=>sync(true);$('soundBtn').onclick=enableNotifications;$('search').oninput=render;$('filter').onchange=render;
+  if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  if(!localStorage.getItem(KEYS.url))openSettings();else{sync(false);restartPolling()}
+})();
+</script>
+</body>
+</html>
