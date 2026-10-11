@@ -21,7 +21,7 @@
   <main class="wrap">
     <header class="top">
       <div class="brand"><div class="logo">🎤</div><div><div class="eyebrow">Panel de organización</div><h1 class="title">Control del Karaoke</h1><p class="subtitle">Inscripciones ordenadas por llegada, sin perder ningún turno.</p></div></div>
-      <div class="actions"><button id="soundBtn" title="Activar sonido">🔔 Activar avisos</button><button id="refreshBtn">↻ Actualizar</button><button class="primary" id="settingsBtn">⚙ Configurar</button></div>
+      <div class="actions"><button id="recommendationsBtn">🎵 Canciones recomendadas</button><button id="soundBtn" title="Activar sonido">🔔 Activar avisos</button><button id="refreshBtn">↻ Actualizar</button><button class="primary" id="settingsBtn">⚙ Configurar</button></div>
     </header>
     <div class="statusbar"><span class="dot" id="connectionDot"></span><span id="connectionText">Falta conectar Google Sheets</span><span>·</span><span id="lastUpdated">Sin sincronizar</span></div>
     <section class="stats">
@@ -51,12 +51,18 @@
     <div class="help">Para que la conexión funcione, el script debe estar implementado como aplicación web y tener acceso autorizado a la hoja. La primera comprobación carga la lista sin avisar de inscripciones antiguas.</div>
     <div class="modalfoot"><button id="closeSettings">Cancelar</button><button class="primary" id="saveSettings">Guardar y conectar</button></div>
   </div></div>
+  <div class="modalback" id="recommendationsBack" role="dialog" aria-modal="true" aria-labelledby="recommendationsTitle"><div class="modal">
+    <h2 id="recommendationsTitle">🎵 Canciones recomendadas</h2>
+    <p>Propuestas enviadas desde el formulario para añadir canciones que aún no están en la lista.</p>
+    <div id="recommendationsList"><div class="empty">Pulsa «Actualizar» para cargar las recomendaciones.</div></div>
+    <div class="modalfoot"><button id="closeRecommendations">Cerrar</button><button class="primary" id="refreshRecommendations">↻ Actualizar</button></div>
+  </div></div>
   <div class="toast" id="toast"></div>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
   const KEYS = {url:'karaoke_sheet_endpoint', poll:'karaoke_poll_seconds', states:'karaoke_states'};
-  let entries = [], timer = null, initialized = false, known = new Set(), audioCtx = null, notificationEnabled = false, busy = false;
+  let entries = [], recommendations = [], timer = null, initialized = false, known = new Set(), audioCtx = null, notificationEnabled = false, busy = false;
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const savedStates = () => { try { return JSON.parse(localStorage.getItem(KEYS.states)||'{}'); } catch { return {}; } };
   const stateMap = savedStates();
@@ -98,7 +104,7 @@
     if(!url){setConnection(false,'Falta conectar Google Sheets');if(isManual)openSettings();return}
     if(busy)return;busy=true;
     try{
-      const payload=await callJsonp(url); const raw=normalizePayload(payload);
+      const payload=await callJsonp(url); const raw=normalizePayload(payload); recommendations=Array.isArray(payload.recommendations)?payload.recommendations:recommendations; renderRecommendations();
       const normalized=raw.map((r,i)=>({
         ...r,
         _id:String(r._id || [r._timestamp||r.timestamp||r['Marca temporal']||r['Timestamp']||i,r._name||r.name||r['Nombre']||r['Nombre y apellidos']||'',r._song||r.song||r['Canción']||r['Cancion']||''].join('|')),
@@ -140,6 +146,15 @@
   function restartPolling(){if(timer)clearInterval(timer);timer=setInterval(()=>sync(false),Math.max(10,Number(localStorage.getItem(KEYS.poll)||20))*1000)}
   $('rows').addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(!b)return;stateMap[b.dataset.id]=b.dataset.state;localStorage.setItem(KEYS.states,JSON.stringify(stateMap));render()});
   $('settingsBtn').onclick=openSettings;$('closeSettings').onclick=()=>$('modalBack').classList.remove('open');
+  function renderRecommendations(){
+    const box=$('recommendationsList');
+    if(!recommendations.length){box.innerHTML='<div class="empty"><strong>Aún no hay recomendaciones</strong>Cuando alguien recomiende una canción desde el formulario, aparecerá aquí.</div>';return}
+    box.innerHTML='<div class="tablewrap"><table style="min-width:0"><thead><tr><th>Canción</th><th>Artista</th><th>Idioma</th><th>Recomendada por</th><th>Fecha</th></tr></thead><tbody>'+recommendations.map(r=>'<tr><td><strong>'+esc(r.song||'—')+'</strong></td><td>'+esc(r.artist||'—')+'</td><td>'+esc(r.language||'—')+'</td><td>'+esc(r.name||'Anónimo')+'</td><td>'+esc(timeText(r._timestamp))+'</td></tr>').join('')+'</tbody></table></div>';
+  }
+  $('recommendationsBtn').onclick=()=>{$('recommendationsBack').classList.add('open');sync(false)};
+  $('closeRecommendations').onclick=()=>$('recommendationsBack').classList.remove('open');
+  $('refreshRecommendations').onclick=()=>sync(true);
+  $('recommendationsBack').addEventListener('click',e=>{if(e.target===$('recommendationsBack'))$('recommendationsBack').classList.remove('open')});
   $('modalBack').addEventListener('click',e=>{if(e.target===$('modalBack'))$('modalBack').classList.remove('open')});
   $('saveSettings').onclick=()=>{const url=$('endpoint').value.trim();if(!url){showToast('Pega la URL de la aplicación web de Apps Script.');return}if(!/^https:\/\/script\.google\.com\/macros\/s\//.test(url)){showToast('La URL debe empezar por https://script.google.com/macros/s/');return}localStorage.setItem(KEYS.url,url);localStorage.setItem(KEYS.poll,$('poll').value);$('modalBack').classList.remove('open');initialized=false;known.clear();sync(true);restartPolling()};
   $('refreshBtn').onclick=()=>sync(true);$('soundBtn').onclick=enableNotifications;$('search').oninput=render;$('filter').onchange=render;
