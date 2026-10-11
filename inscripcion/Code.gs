@@ -1,5 +1,7 @@
 const SHEET_ID = '1VRiAQIm1HBZZ12UlEfp6oYAXSul-4ybqATnXyyeToos';
 const RESPONSE_SHEET_NAME = 'Inscripciones Karaoke';
+// Fuente remota del catálogo facilitada para cargarlo automáticamente.
+const CATALOG_SOURCE_URL = 'https://script.google.com/macros/s/AKfycbwF3rdON_zUUi2Fc2A52jr5gObHIxqBl7ZjgJZUKl5De-HyNZUYVb-b6Ph4X0DjEaC17g/exec';
 
 const LANGUAGES = [
   { label: 'Inglés', key: 'english' },
@@ -66,6 +68,11 @@ function findLanguageSheet_(ss, key) {
 }
 
 function getCatalog() {
+  // Primero intenta leer el catálogo desde el endpoint remoto. Si no devuelve
+  // JSON con el formato esperado, conserva la lectura directa de la hoja actual.
+  const remoteCatalog = getRemoteCatalog_();
+  if (remoteCatalog) return remoteCatalog;
+
   const ss = SpreadsheetApp.openById(SHEET_ID);
   const result = {};
   LANGUAGES.forEach(lang => {
@@ -90,6 +97,54 @@ function getCatalog() {
     result[lang.key] = {label: lang.label, artists: artistsList, songsByArtist};
   });
   return result;
+}
+
+function getRemoteCatalog_() {
+  try {
+    const response = UrlFetchApp.fetch(CATALOG_SOURCE_URL, {
+      method: 'get',
+      followRedirects: true,
+      muteHttpExceptions: true
+    });
+    if (response.getResponseCode() < 200 || response.getResponseCode() >= 300) return null;
+    const raw = response.getContentText();
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (err) {
+      // Puede que el endpoint exponga el catálogo mediante un parámetro de API.
+      const url = CATALOG_SOURCE_URL + (CATALOG_SOURCE_URL.includes('?') ? '&' : '?') + 'api=catalog';
+      const secondResponse = UrlFetchApp.fetch(url, {
+        method: 'get',
+        followRedirects: true,
+        muteHttpExceptions: true
+      });
+      if (secondResponse.getResponseCode() < 200 || secondResponse.getResponseCode() >= 300) return null;
+      data = JSON.parse(secondResponse.getContentText());
+    }
+
+    const catalog = data && data.catalog ? data.catalog : data;
+    if (!catalog || typeof catalog !== 'object') return null;
+    const valid = LANGUAGES.every(lang => {
+      const item = catalog[lang.key];
+      return item && Array.isArray(item.artists) && item.songsByArtist && typeof item.songsByArtist === 'object';
+    });
+    if (!valid) return null;
+
+    // Normaliza etiquetas para que la interfaz siga usando los nombres definidos aquí.
+    const result = {};
+    LANGUAGES.forEach(lang => {
+      result[lang.key] = {
+        label: lang.label,
+        artists: catalog[lang.key].artists,
+        songsByArtist: catalog[lang.key].songsByArtist
+      };
+    });
+    return result;
+  } catch (err) {
+    console.warn('No se pudo leer el catálogo remoto; se usará Google Sheets: ' + err.message);
+    return null;
+  }
 }
 
 function submitSignup(payload) {
