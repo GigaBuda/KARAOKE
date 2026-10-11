@@ -11,10 +11,34 @@ const LANGUAGES = [
   { label: 'Neerlandés', key: 'nederlands' }
 ];
 
-function doGet() {
+function doGet(e) {
+  // API para el formulario alojado en Vercel; sin parámetro sigue mostrando la página Apps Script.
+  const api = e && e.parameter ? e.parameter.api : '';
+  if (api === 'catalog') {
+    return jsonResponse_({ok: true, catalog: getCatalog()});
+  }
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('Inscripciones Karaoke')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function doPost(e) {
+  const api = e && e.parameter ? e.parameter.api : '';
+  if (api !== 'signup') {
+    return jsonResponse_({ok: false, message: 'Endpoint no válido.'});
+  }
+  try {
+    const raw = e && e.postData && e.postData.contents ? e.postData.contents : '{}';
+    const payload = JSON.parse(raw);
+    return jsonResponse_(submitSignup(payload));
+  } catch (err) {
+    return jsonResponse_({ok: false, message: err && err.message ? err.message : String(err)});
+  }
+}
+
+function jsonResponse_(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function normalize_(value) {
