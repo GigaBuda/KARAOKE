@@ -1,21 +1,110 @@
 <!DOCTYPE html>
-<html><head><base target="_top"><meta charset="utf-8">
-<style>
-*{box-sizing:border-box}body{margin:0;background:#f1efff;color:#202124;font:16px Arial,sans-serif}.wrap{max-width:720px;margin:24px auto;padding:0 14px 32px}.card{background:#fff;border:1px solid #ddd;border-radius:12px;overflow:hidden}header{border-top:9px solid #5b4be8;padding:24px}h1{margin:0 0 10px;font-size:28px;font-weight:500}.intro{margin:0}form{padding:4px 24px 24px}label{display:block;font-weight:600;margin:18px 0 8px}select,input{width:100%;padding:13px;border:1px solid #b8bbc0;border-radius:7px;background:white;font-size:16px}select:disabled{background:#f4f4f4;color:#777}button{width:100%;margin-top:24px;padding:14px;border:0;border-radius:24px;background:#5b4be8;color:white;font-weight:700;font-size:16px;cursor:pointer}button:disabled{opacity:.6}.hint{font-size:13px;color:#5f6368;margin:6px 0 0}.status{display:none;margin-top:16px;padding:12px;border-radius:8px}.status.ok{display:block;background:#e6f4ea;color:#137333}.status.err{display:block;background:#fce8e6;color:#b3261e}.req{color:#b3261e}@media(max-width:520px){.wrap{margin:12px auto;padding:0 8px 24px}header{padding:20px}form{padding:4px 20px 22px}h1{font-size:24px}}
-</style></head><body><main class="wrap"><section class="card"><header><h1>🎤 Inscripciones Karaoke</h1><p class="intro">¡Apúntate, elige tu canción y prepárate para subir al escenario!</p></header>
-<form id="signupForm">
-<label for="language">Idioma <span class="req">*</span></label><select id="language" required><option value="">Cargando idiomas…</option></select>
-<label for="artist">Cantante o autor <span class="req">*</span></label><select id="artist" required disabled><option value="">Primero elige un idioma</option></select><p class="hint">Los nombres se leen de la columna B.</p>
-<label for="song">Canción <span class="req">*</span></label><select id="song" required disabled><option value="">Primero elige un cantante</option></select><p class="hint">Las canciones se leen de la columna D y se filtran por cantante.</p>
-<label for="singerName">Nombre de la persona que va a cantar <span class="req">*</span></label><input id="singerName" maxlength="120" required placeholder="Escribe tu nombre">
-<button id="submitButton" type="submit">Enviar inscripción</button><div id="status" class="status" role="status"></div>
-</form></section></main>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b1d">
+  <title>Karaoke · Inscripción</title>
+  <style>
+    :root{color-scheme:dark;--bg:#080a18;--panel:#11152b;--panel2:#171d39;--text:#f5f7ff;--muted:#a7b0d1;--cyan:#49f4ff;--pink:#ff4fc8;--purple:#9a6bff;--line:rgba(137,158,255,.24)}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;color:var(--text);font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 12% 5%,rgba(92,57,255,.25),transparent 34%),radial-gradient(ellipse at 90% 20%,rgba(255,54,190,.14),transparent 32%),var(--bg);padding:24px 14px 40px}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.15;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(to bottom,black,transparent 85%)}
+    .wrap{position:relative;max-width:560px;margin:0 auto}
+    .topline{display:flex;align-items:center;justify-content:center;gap:8px;margin:2px 0 16px;color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
+    .live-dot{width:8px;height:8px;border-radius:50%;background:#52ffb8;box-shadow:0 0 12px #52ffb8}
+    .card{border:1px solid rgba(121,139,255,.35);border-radius:26px;overflow:hidden;background:linear-gradient(155deg,rgba(25,30,61,.97),rgba(12,15,34,.98));box-shadow:0 0 0 1px rgba(255,79,200,.08),0 24px 80px rgba(0,0,0,.42),0 0 45px rgba(92,70,255,.13)}
+    .hero{text-align:center;padding:30px 25px 24px;background:radial-gradient(ellipse at 50% 0,rgba(92,244,255,.12),transparent 65%);border-bottom:1px solid var(--line)}
+    .mic{width:64px;height:64px;display:grid;place-items:center;margin:0 auto 14px;border-radius:20px;color:var(--cyan);font-size:32px;background:linear-gradient(145deg,rgba(73,244,255,.13),rgba(154,107,255,.18));border:1px solid rgba(73,244,255,.55);box-shadow:0 0 25px rgba(73,244,255,.12),inset 0 0 18px rgba(73,244,255,.07)}
+    h1{font-size:clamp(29px,7vw,40px);line-height:1.08;letter-spacing:-.04em;margin:0;font-weight:900}
+    h1 span{display:block;color:var(--cyan);text-shadow:0 0 22px rgba(73,244,255,.3)}
+    .intro{max-width:360px;margin:14px auto 0;color:var(--muted);font-size:15px}
+    .pill{display:inline-flex;align-items:center;gap:7px;margin-top:18px;padding:7px 12px;border:1px solid rgba(255,79,200,.36);border-radius:99px;color:#ff9ce2;background:rgba(255,79,200,.07);font-size:12px;font-weight:700}
+    form{padding:23px 25px 27px}
+    .field{margin:0 0 19px}
+    label{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:14px;font-weight:750;color:#eef0ff}
+    .num{display:inline-grid;place-items:center;width:23px;height:23px;border-radius:8px;background:rgba(154,107,255,.16);border:1px solid rgba(154,107,255,.35);color:#c9b5ff;font-size:12px}
+    .req{color:var(--pink)}
+    select,input{display:block;width:100%;min-height:51px;padding:13px 14px;border:1px solid rgba(150,164,222,.35);border-radius:13px;background:#0c1024;color:var(--text);font:inherit;outline:none;transition:border-color .18s,box-shadow .18s}
+    select:focus,input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(73,244,255,.11)}
+    select:disabled{opacity:.48;cursor:not-allowed}
+    select option{background:#11152b;color:#fff}
+    input::placeholder{color:#7f89ad}
+    .hint{margin:7px 2px 0;color:#8792b8;font-size:12px}
+    button{width:100%;min-height:54px;margin-top:4px;border:0;border-radius:14px;background:linear-gradient(100deg,#4bdeff,#8b72ff 55%,#ff55c8);color:#080b1c;font:900 16px/1.2 system-ui,sans-serif;letter-spacing:.02em;cursor:pointer;box-shadow:0 8px 28px rgba(117,106,255,.22);transition:transform .15s,filter .15s}
+    button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    button:disabled{opacity:.58;cursor:wait;transform:none}
+    .status{display:none;margin-top:16px;padding:13px 14px;border-radius:12px;font-size:14px;font-weight:650;overflow-wrap:anywhere}
+    .status.ok{display:block;border:1px solid rgba(82,255,184,.35);background:rgba(31,184,123,.12);color:#8effcb}
+    .status.err{display:block;border:1px solid rgba(255,92,130,.4);background:rgba(255,57,99,.1);color:#ff9db3}
+    .footer{text-align:center;color:#6f7a9e;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:17px 8px 0}
+    @media(max-width:480px){body{padding:15px 10px 28px}.hero{padding:25px 18px 21px}form{padding:21px 18px 22px}.card{border-radius:22px}.intro{font-size:14px}}
+    @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="topline"><span class="live-dot"></span> Karaoke · Tu momento empieza aquí</div>
+    <section class="card">
+      <header class="hero">
+        <div class="mic" aria-hidden="true">🎤</div>
+        <h1>SUBE EL VOLUMEN<span>Y BRILLA</span></h1>
+        <p class="intro">Elige tu canción favorita, inscríbete y prepárate para conquistar el escenario.</p>
+        <div class="pill">✦ Tu voz merece escucharse ✦</div>
+      </header>
+      <form id="signupForm">
+        <div class="field">
+          <label for="language"><span class="num">1</span> Idioma <span class="req">*</span></label>
+          <select id="language" required><option value="">Cargando idiomas…</option></select>
+        </div>
+        <div class="field">
+          <label for="artist"><span class="num">2</span> Cantante o autor <span class="req">*</span></label>
+          <select id="artist" required disabled><option value="">Primero elige un idioma</option></select>
+          <p class="hint">Escoge un artista del catálogo.</p>
+        </div>
+        <div class="field">
+          <label for="song"><span class="num">3</span> Canción <span class="req">*</span></label>
+          <select id="song" required disabled><option value="">Primero elige un cantante</option></select>
+          <p class="hint">Solo aparecerán las canciones de ese artista.</p>
+        </div>
+        <div class="field">
+          <label for="singerName"><span class="num">4</span> Nombre de quien va a cantar <span class="req">*</span></label>
+          <input id="singerName" maxlength="120" required autocomplete="name" placeholder="Escribe tu nombre">
+        </div>
+        <button id="submitButton" type="submit">🎶 CONFIRMAR INSCRIPCIÓN</button>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+    <div class="footer">Luces · Música · ¡A cantar!</div>
+  </main>
 <script>
-let catalog={};const lang=document.getElementById('language'),artist=document.getElementById('artist'),song=document.getElementById('song'),form=document.getElementById('signupForm'),btn=document.getElementById('submitButton'),statusBox=document.getElementById('status');
+let catalog={};
+const lang=document.getElementById('language'),artist=document.getElementById('artist'),song=document.getElementById('song'),form=document.getElementById('signupForm'),btn=document.getElementById('submitButton'),statusBox=document.getElementById('status');
+const browserLanguage=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'es']).map(x=>String(x).toLowerCase().split('-')[0]);
+const languagePreference={en:'english',es:'espanol',ca:'catala',fr:'francais',it:'italiano',nl:'nederlands'};
 function fill(sel,placeholder,items){sel.replaceChildren();const first=document.createElement('option');first.value='';first.textContent=placeholder;sel.appendChild(first);(items||[]).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o)});sel.disabled=!(items&&items.length)}
 function showStatus(msg,type){statusBox.textContent=msg;statusBox.className='status '+type}
-google.script.run.withSuccessHandler(data=>{catalog=data||{};fill(lang,'Elige un idioma',Object.keys(catalog));Array.from(lang.options).forEach(o=>{if(o.value)o.textContent=catalog[o.value].label})}).withFailureHandler(e=>showStatus(e.message||String(e),'err')).getCatalog();
+google.script.run.withSuccessHandler(data=>{
+  catalog=data||{};
+  fill(lang,'Elige un idioma',Object.keys(catalog));
+  Array.from(lang.options).forEach(o=>{if(o.value)o.textContent=catalog[o.value].label});
+  const preferred=browserLanguage.map(code=>languagePreference[code]).find(key=>key&&catalog[key]);
+  if(preferred){lang.value=preferred;lang.dispatchEvent(new Event('change'));}
+}).withFailureHandler(e=>showStatus(e.message||String(e),'err')).getCatalog();
 lang.addEventListener('change',()=>{const d=catalog[lang.value];fill(artist,d?'Elige un cantante':'Primero elige un idioma',d?d.artists:[]);fill(song,'Primero elige un cantante',[]);statusBox.className='status'});
 artist.addEventListener('change',()=>{const d=catalog[lang.value],songs=d&&d.songsByArtist[artist.value]?d.songsByArtist[artist.value]:[];fill(song,songs.length?'Elige una canción':'No hay canciones para este cantante',songs);statusBox.className='status'});
-form.addEventListener('submit',e=>{e.preventDefault();btn.disabled=true;btn.textContent='Enviando…';const payload={language:lang.value,artist:artist.value,song:song.value,singerName:document.getElementById('singerName').value.trim()};google.script.run.withSuccessHandler(r=>{showStatus(r.message||'Inscripción registrada.','ok');form.reset();fill(artist,'Primero elige un idioma',[]);fill(song,'Primero elige un cantante',[]);btn.disabled=false;btn.textContent='Enviar inscripción'}).withFailureHandler(err=>{showStatus(err.message||String(err),'err');btn.disabled=false;btn.textContent='Enviar inscripción'}).submitSignup(payload)});
-</script></body></html>
+form.addEventListener('submit',e=>{
+  e.preventDefault();
+  if(!form.reportValidity())return;
+  btn.disabled=true;btn.textContent='ENVIANDO…';
+  const payload={language:lang.value,artist:artist.value,song:song.value,singerName:document.getElementById('singerName').value.trim()};
+  google.script.run.withSuccessHandler(r=>{
+    showStatus(r.message||'¡Inscripción registrada correctamente!','ok');
+    form.reset();fill(artist,'Primero elige un idioma',[]);fill(song,'Primero elige un cantante',[]);
+    btn.disabled=false;btn.textContent='🎶 CONFIRMAR INSCRIPCIÓN';
+  }).withFailureHandler(err=>{showStatus(err.message||String(err),'err');btn.disabled=false;btn.textContent='🎶 CONFIRMAR INSCRIPCIÓN'}).submitSignup(payload);
+});
+</script>
+</body>
+</html>
