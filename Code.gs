@@ -61,7 +61,7 @@ function getRecommendations_() {
     _timestamp: row[0] instanceof Date ? row[0].toISOString() : String(row[0] || ''),
     song: String(row[1] || ''),
     artist: String(row[2] || ''),
-    language: String(row[3] || ''),
+    language: String(row[5] || row[3] || ''),
     name: String(row[4] || '')
   })).reverse();
 }
