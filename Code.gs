@@ -48,7 +48,22 @@ function getSignupData_() {
     });
 
   rows.sort((a, b) => new Date(a._timestamp).getTime() - new Date(b._timestamp).getTime());
-  return { ok: true, rows: rows };
+  return { ok: true, rows: rows, recommendations: getRecommendations_() };
+}
+ 
+function getRecommendations_() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName('Canciones Recomendadas');
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  const values = sheet.getDataRange().getValues();
+  return values.slice(1).filter(row => row.some(cell => cell !== '' && cell !== null)).map((row, i) => ({
+    _id: String(i + 1),
+    _timestamp: row[0] instanceof Date ? row[0].toISOString() : String(row[0] || ''),
+    song: String(row[1] || ''),
+    artist: String(row[2] || ''),
+    language: String(row[3] || ''),
+    name: String(row[4] || '')
+  })).reverse();
 }
 
 function findHeader_(headers, candidates) {
